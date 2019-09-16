@@ -2,7 +2,7 @@ exports.formatDates = list => {
   if(!list.length) return [];
   return list.map(({created_at: val, ...rest}) => {
     const newObj = {
-      created_at: Date(val),
+      created_at: new Date(val),
       ...rest
     }
     return newObj;
@@ -21,7 +21,7 @@ exports.formatComments = (comments, articleRef) => {
   if(!comments.length) return [];
   return comments.map(({belongs_to, created_by: val, ...rest}) => {
     const formattedComment = {
-      belongs_to: articleRef[belongs_to],
+      article_id: articleRef[belongs_to],
       author: val,
       ...rest
     };

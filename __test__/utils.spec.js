@@ -21,7 +21,7 @@ describe('formatDates', () => {
       title: 'Running a Node App',
       topic: 'coding',
       author: 'jessjelly',
-      created_at: Date(myDate)
+      created_at: new Date(myDate)
     }];
     expect(actual).toEqual(expected);
   });
@@ -52,19 +52,19 @@ describe('formatDates', () => {
         title: 'Running a Node App',
         topic: 'coding',
         author: 'jessjelly',
-        created_at: Date(input[0].created_at),
+        created_at: new Date(input[0].created_at),
       },
       {
         title: "The Rise Of Thinking Machines: How IBM's Watson Takes On The World",
         topic: 'coding',
         author: 'jessjelly',
-        created_at: Date(input[1].created_at),
+        created_at: new Date(input[1].created_at),
       },
       {
         title: '22 Amazing open source React projects',
         topic: 'coding',
         author: 'happyamy2016',
-        created_at: Date(input[2].created_at),
+        created_at: new Date(input[2].created_at),
       }
     ];
     expect(actual).toEqual(expected);
@@ -81,6 +81,9 @@ describe('formatDates', () => {
     const formattedDates = formatDates(input);
     expect(formattedDates).not.toBe(input);
     expect(formattedDates).not.toBe(input[0]);
+  });
+  it('should ', () => {
+    
   });
 });
 
@@ -193,7 +196,7 @@ describe('formatComments', () => {
       {
         body:
     "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
-        belongs_to: 1,
+        article_id: 1,
         author: 'butter_bridge',
         votes: 16,
         created_at: 1511354163389
@@ -244,7 +247,7 @@ describe('formatComments', () => {
       {
         body:
           "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
-        belongs_to: 1,
+        article_id: 1,
         author: 'butter_bridge',
         votes: 16,
         created_at: 1511354163389,
@@ -252,7 +255,7 @@ describe('formatComments', () => {
       {
         body:
           'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.',
-        belongs_to: 2,
+        article_id: 2,
         author: 'butter_bridge',
         votes: 14,
         created_at: 1479818163389,
@@ -260,14 +263,14 @@ describe('formatComments', () => {
       {
         body:
           'Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.',
-        belongs_to: 2,
+        article_id: 2,
         author: 'icellusedkars',
         votes: 100,
         created_at: 1448282163389,
       },
       {
         body: ' I carry a log — yes. Is it funny to you? It is not to me.',
-        belongs_to: 2,
+        article_id: 2,
         author: 'icellusedkars',
         votes: -100,
         created_at: 1416746163389,

@@ -23,7 +23,7 @@ exports.seed = function(knex) {
     .then(() => {
       const formattedArticles = formatDates(articleData);
 
-      return knex('articles').insert(formattedArticles)
+      return knex('articles').insert(formattedArticles).returning('*');
       /* 
       
       Your article data is currently in the incorrect format and will violate your SQL schema. 
@@ -34,6 +34,7 @@ exports.seed = function(knex) {
       */
     })
     .then(articleRows => {
+
       /* 
 
       Your comment data is currently in the incorrect format and will violate your SQL schema. 
@@ -45,6 +46,7 @@ exports.seed = function(knex) {
 
       const articleRef = makeRefObj(articleRows);
       const formattedComments = formatComments(commentData, articleRef);
-      return knex('comments').insert(formattedComments);
+      const datedComments = formatDates(formattedComments);
+      return knex('comments').insert(datedComments);
     });
 };
