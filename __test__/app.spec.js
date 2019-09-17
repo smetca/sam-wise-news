@@ -60,7 +60,6 @@ describe('/api', () => {
             .get('/api/articles/1')
             .expect(200)
             .then(({body}) => {
-              console.log(body)
               expect(body.article).toBeInstanceOf(Object);
               expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
                 'author',
@@ -81,7 +80,6 @@ describe('/api', () => {
             .get('/api/articles/10000')
             .expect(404)
             .then(({body}) => {
-              console.log(body);
               expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('Not Found');
             })
@@ -91,7 +89,6 @@ describe('/api', () => {
             .get('/api/articles/not-a-valid-id')
             .expect(400)
             .then(({body}) => {
-              console.log(body);
               expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('select * from "articles" where "article_id" = $1 - invalid input syntax for integer: "not-a-valid-id"');
             });
