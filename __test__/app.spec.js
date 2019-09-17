@@ -3,8 +3,11 @@ const request = require('supertest');
 const connection = require('../connection');
 
 describe('/api', () => {
+  beforeEach(() => {
+    return connection.seed.run();
+  })
   afterAll(() => {
-    connection.destroy();
+    return connection.destroy();
   })
   describe('/topics', () => {
     describe('GET: 200', () => {
@@ -54,6 +57,26 @@ describe('/api', () => {
   });
   describe('/articles', () => {
     describe('/:article_id', () => {
+      describe('/comments', () => {
+        describe('POST: 200', () => {
+          it('should post a new comment on a specific article and return that posted comment', () => {
+            return request(app)
+              .post('/api/articles/1/comments')
+              .send({username: 'lurker', body: 'Just testing'})
+              .expect(200)
+              .then(({body}) => {
+                expect(body.comment).toBeInstanceOf(Object);
+                expect(Object.keys(body.comment)).toEqual(expect.arrayContaining([
+                  'comment_id',
+                  'votes',
+                  'created_at',
+                  'author',
+                  'body'
+                ]));
+              })
+          });
+        });
+      });
       describe('GET: 200', () => {
         it('should respond with an article with all article properties when given a valid article_id', () => {
           return request(app)
@@ -92,6 +115,26 @@ describe('/api', () => {
               expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('select * from "articles" where "article_id" = $1 - invalid input syntax for integer: "not-a-valid-id"');
             });
+        });
+      });
+      describe('PATCH: 200', () => {
+        it('should update an existing article\'s votes and respond with the changed article', () => {
+          return request(app)
+            .patch('/api/articles/1')
+            .send({ inc_votes: 30 })
+            .expect(200)
+            .then(({body}) => {
+              expect(body.article).toBeInstanceOf(Object)
+              expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
+                'author',
+                'title',
+                'article_id',
+                'body',
+                'topic',
+                'created_at',
+                'votes'
+              ]));
+            })
         });
       });
     });
