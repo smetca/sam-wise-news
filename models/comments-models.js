@@ -1,7 +1,6 @@
 const connection = require('../connection');
 
 exports.insertCommentByArticle = (article_id, comment) => {
-
   const commentObj = {
     author: comment.username,
     article_id: article_id,
@@ -29,7 +28,6 @@ exports.insertCommentByArticle = (article_id, comment) => {
 }
 
 exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'asc') => {
-
   return connection
     .select('*')
     .from('comments')
@@ -41,7 +39,6 @@ exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 
 }
 
 exports.updateCommentById = (comment_id, newVotes) => {
-  
   return connection
     .select('votes')
     .from('comments')

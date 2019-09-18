@@ -5,5 +5,5 @@ exports.getAllTopics = (req, res, next) => {
     .then(topics => {
       res.status(200).json({topics});
     })
-    .catch(console.log);
+    .catch(next);
 }
