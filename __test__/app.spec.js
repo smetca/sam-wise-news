@@ -77,7 +77,7 @@ describe('/api', () => {
           .get('/api/articles')
           .expect(200)
           .then(({body}) => {
-            chaiExpect(body.articles).to.be.sortedBy('created_at')
+            chaiExpect(body.articles).to.be.descendingBy('created_at')
           })
       });
       it('should respond with 200 and allow sorting by any valid column', () => {
@@ -85,15 +85,23 @@ describe('/api', () => {
           .get('/api/articles?sortBy=title')
           .expect(200)
           .then(({body}) => {
-            chaiExpect(body.articles).to.be.sortedBy('title');
+            chaiExpect(body.articles).to.be.descendingBy('title');
           });
       });
-      it('should respond with 200 and allow sorting to be done desc', () => {
+      it('should respond with 200 and be sorted by descending by default', () => {
         return request(app)
-          .get('/api/articles?orderBy=desc')
+          .get('/api/articles')
           .expect(200)
           .then(({body}) => {
-            chaiExpect(body.articles).to.be.descendingBy('created_at');
+            chaiExpect(body.articles).to.be.descendingBy('created_at')
+          })
+      });
+      it('should respond with 200 and allow sorting to be done asc', () => {
+        return request(app)
+          .get('/api/articles?orderBy=asc')
+          .expect(200)
+          .then(({body}) => {
+            chaiExpect(body.articles).to.be.sortedBy('created_at');
           });
       });
       it('should respond with 200 and allow filtering by author name', () => {
@@ -132,7 +140,7 @@ describe('/api', () => {
           .get('/api/articles?sortBy=1010')
           .expect(400)
           .then(({body}) => {
-            expect(body.msg).toBe('select \"articles\".*, count(\"comment_id\") as \"comment_count\" from \"articles\" left join \"comments\" on \"articles\".\"article_id\" = \"comments\".\"article_id\" group by \"articles\".\"article_id\" order by \"1010\" asc - column \"1010\" does not exist');
+            expect(body.msg).toBe('select \"articles\".*, count(\"comment_id\") as \"comment_count\" from \"articles\" left join \"comments\" on \"articles\".\"article_id\" = \"comments\".\"article_id\" group by \"articles\".\"article_id\" order by \"1010\" desc - column \"1010\" does not exist');
           })
       });
     });
@@ -309,7 +317,71 @@ describe('/api', () => {
           });
         });
       });
-      
+
     });
   });
+
+  describe('/comments', () => {
+
+    describe('/:comment_id', () => {
+      describe('PATCH: 200s', () => {
+        it('should respond with 200 the votes on a specific comment should be updated', () => {
+          return request(app)
+            .patch('/api/comments/1')
+            .send({ inc_votes: 100 })
+            .expect(200)
+            .then(({body}) => {
+              expect(Object.keys(body.comment)).toEqual(expect.arrayContaining([
+                'comment_id',
+                'votes',
+                'created_at',
+                'author',
+                'body'
+              ]))
+              expect(body.comment.votes).toBe(116);
+            })
+        });
+      });
+    });
+    describe('PATCH: 400s', () => {
+      it('should respond with 400 and an error message when given an invalid votes object', () => {
+        return request(app)
+          .patch('/api/comments/1')
+          .send(({inc_votes: 'not-a-valid-vote-increment'}))
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('update \"comments\" set \"votes\" = $1 where \"comment_id\" = $2 returning * - invalid input syntax for integer: \"16not-a-valid-vote-increment\"');
+          })
+      });
+    });
+    describe('DELETE: 204', () => {
+      it('should respond with 204 with no content successfully deleting a comment given a valid id', () => {
+        return request(app)
+          .del('/api/comments/1')
+          .expect(204)
+          .then(({body}) => {
+            expect(body).toEqual({});
+          })
+      });
+    });
+    describe('DELETE: 400s', () => {
+      it('should respond with 404 and an error message when given a comment_id that doesn\'t exist', () => {
+        return request(app)
+          .del('/api/comments/1000')
+          .expect(404)
+          .then(({body}) => {
+            expect(body.msg).toBe('Not Found')
+          }) 
+      });
+      it('should respond with 400 and an error message when given an invalid comment_id', () => {
+        return request(app)
+          .del('/api/comments/not-a-valid-id')
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('delete from \"comments\" where \"comment_id\" = $1 returning * - invalid input syntax for integer: \"not-a-valid-id\"');
+          })
+      });
+    });
+  });
+
 });

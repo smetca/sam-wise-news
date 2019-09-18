@@ -1,6 +1,6 @@
 const connection = require('../connection');
 
-exports.selectArticles = (sortBy = 'created_at', orderBy = 'asc', author, topic) => {
+exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic) => {
   console.log('here2');
   return connection
     .select('articles.*')

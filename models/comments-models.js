@@ -39,3 +39,36 @@ exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 
       return !comments.length ? Promise.reject({status: 404, msg: 'Not Found'}) : comments;
     })
 }
+
+exports.updateCommentById = (comment_id, newVotes) => {
+  
+  return connection
+    .select('votes')
+    .from('comments')
+    .where({comment_id})
+    .then(([{votes}]) => {
+      if(!votes) return Promise.reject({status: 404, msg: 'Not Found'})
+      else {
+        votes += newVotes;
+        return connection
+          .update({votes})
+          .from('comments')
+          .where({comment_id})
+          .returning('*');
+      }
+    })
+    .then(([updatedComment]) => {
+      return updatedComment;
+    })
+}
+
+exports.removeCommentById = (comment_id) => {
+  return connection
+    .delete('*')
+    .from('comments')
+    .where({comment_id})
+    .returning('*')
+    .then(deletedComment => {
+      if(!deletedComment.length) return Promise.reject({status: 404, msg: 'Not Found'})
+    })
+}

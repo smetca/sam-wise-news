@@ -1,4 +1,9 @@
-const {insertCommentByArticle, selectCommentsByArticle} = require('../models/comments-models')
+const {
+  insertCommentByArticle,
+  selectCommentsByArticle,
+  updateCommentById,
+  removeCommentById
+} = require('../models/comments-models')
 
 exports.postComment = (req, res, next) => {
   const { article_id } = req.params;
@@ -16,6 +21,27 @@ exports.getComments = (req, res, next) => {
   selectCommentsByArticle(article_id, sortBy, orderBy)
     .then(comments => {
       res.status(200).json({comments})
+    })
+    .catch(next);
+}
+
+exports.patchComment = (req, res, next) => {
+  const {comment_id} = req.params;
+  const { inc_votes } = req.body;
+  console.log(inc_votes);
+  updateCommentById(comment_id, inc_votes)
+    .then(comment => {
+      res.status(200).json({comment});
+    })
+    .catch(next);
+}
+
+exports.deleteComment = (req, res, next) => {
+  const {comment_id} = req.params;
+  console.log('here');
+  removeCommentById(comment_id)
+    .then(() => {
+      res.sendStatus(204);
     })
     .catch(next);
 }
