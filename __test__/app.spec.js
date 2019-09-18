@@ -11,14 +11,6 @@ describe('/api', () => {
   })
   describe('/topics', () => {
     describe('GET: 200', () => {
-      it('should respond with a json with a key of topics that is an array of topics', () => {
-        return request(app)
-          .get('/api/topics')
-          .expect(200)
-          .then(({body}) => {
-            expect(body.topics).toBeInstanceOf(Array);
-          });
-      });
       it('should respond with an array of topics that contain all topic properties', () => {
         return request(app)
           .get('/api/topics')
@@ -37,7 +29,6 @@ describe('/api', () => {
             .get('/api/users/lurker')
             .expect(200)
             .then(({body}) => {
-              expect(body.user).toBeInstanceOf(Object);
               expect(Object.keys(body.user)).toEqual(expect.arrayContaining(['username', 'avatar_url', 'name']))
             });
         });
@@ -48,7 +39,6 @@ describe('/api', () => {
             .get('/api/users/lurkerssssssss')
             .expect(404)
             .then(({body}) => {
-              expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('Not Found')
             });
         });
@@ -65,7 +55,6 @@ describe('/api', () => {
               .send({username: 'lurker', body: 'Just testing'})
               .expect(200)
               .then(({body}) => {
-                expect(body.comment).toBeInstanceOf(Object);
                 expect(Object.keys(body.comment)).toEqual(expect.arrayContaining([
                   'comment_id',
                   'votes',
@@ -83,7 +72,6 @@ describe('/api', () => {
             .get('/api/articles/1')
             .expect(200)
             .then(({body}) => {
-              expect(body.article).toBeInstanceOf(Object);
               expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
                 'author',
                 'title',
@@ -103,7 +91,6 @@ describe('/api', () => {
             .get('/api/articles/10000')
             .expect(404)
             .then(({body}) => {
-              expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('Not Found');
             })
         });
@@ -112,7 +99,6 @@ describe('/api', () => {
             .get('/api/articles/not-a-valid-id')
             .expect(400)
             .then(({body}) => {
-              expect(body).toBeInstanceOf(Object);
               expect(body.msg).toBe('select * from "articles" where "article_id" = $1 - invalid input syntax for integer: "not-a-valid-id"');
             });
         });
@@ -124,7 +110,6 @@ describe('/api', () => {
             .send({ inc_votes: 30 })
             .expect(200)
             .then(({body}) => {
-              expect(body.article).toBeInstanceOf(Object)
               expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
                 'author',
                 'title',

@@ -12,11 +12,9 @@ exports.postComment = (req, res, next) => {
 
 exports.getComment = (req, res, next) => {
   const { article_id } = req.params;
-
   selectComment(article_id)
     .then(comment => {
       res.status(200).json({comment})
     })
     .catch(next);
-
 }
