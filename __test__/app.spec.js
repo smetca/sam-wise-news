@@ -10,7 +10,7 @@ describe('/api', () => {
     return connection.destroy();
   })
   describe('/topics', () => {
-    describe('GET: 200', () => {
+    describe('GET: 200s', () => {
       it('should respond with an array of topics that contain all topic properties', () => {
         return request(app)
           .get('/api/topics')
@@ -23,7 +23,7 @@ describe('/api', () => {
   });
   describe('/users', () => {
     describe('/:username', () => {
-      describe('GET: 200', () => {
+      describe('GET: 200s', () => {
         it('should respond with a single user object with valid properties when given a valid username', () => {
           return request(app)
             .get('/api/users/lurker')
@@ -33,7 +33,7 @@ describe('/api', () => {
             });
         });
       });
-      describe('GET: 404', () => {
+      describe('GET: 400s', () => {
         it('should respond with a 404 when given an non existant username, as well as an error message', () => {
           return request(app)
             .get('/api/users/lurkerssssssss')
@@ -48,7 +48,7 @@ describe('/api', () => {
   describe('/articles', () => {
     describe('/:article_id', () => {
       describe('/comments', () => {
-        describe('POST: 200', () => {
+        describe('POST: 200s', () => {
           it('should post a new comment on a specific article and return that posted comment', () => {
             return request(app)
               .post('/api/articles/1/comments')
@@ -65,8 +65,37 @@ describe('/api', () => {
               })
           });
         });
+        describe('POST: 400s', () => {
+          it('should respond with 400 and an error message when passed an invalid comment object properties', () => {
+            return request(app)
+              .post('/api/articles/1/comments')
+              .send({username: 23, body: 30101})
+              .expect(400)
+              .then(({body}) => {
+                expect(body.msg).toBe('insert into "comments" ("article_id", "author", "body", "created_at", "votes") values ($1, $2, $3, $4, $5) returning * - insert or update on table "comments" violates foreign key constraint "comments_author_foreign"');
+              })
+          });
+          it('should respond with 400 and an error message when passed a comment from an invalid user', () => {
+            return request(app)
+              .post('/api/articles/1/comments')
+              .send({username: 'idontexist', body: 'Just testing'})
+              .expect(400)
+              .then(({body}) => {
+                expect(body.msg).toBe('insert into "comments" ("article_id", "author", "body", "created_at", "votes") values ($1, $2, $3, $4, $5) returning * - insert or update on table "comments" violates foreign key constraint "comments_author_foreign"');
+              })
+          });
+          it('should respond with 422 when requesting an article that doesn\'t exist an an error message', () => {
+            return request(app)
+              .post('/api/articles/1000/comments')
+              .send({username: 'lurker', body: 'Just testing'})
+              .expect(422)
+              .then(({body}) => {
+                expect(body.msg).toEqual('Unprocessable Entity');
+              })
+          });
+        });
       });
-      describe('GET: 200', () => {
+      describe('GET: 200s', () => {
         it('should respond with an article with all article properties when given a valid article_id', () => {
           return request(app)
             .get('/api/articles/1')
@@ -103,7 +132,7 @@ describe('/api', () => {
             });
         });
       });
-      describe('PATCH: 200', () => {
+      describe('PATCH: 200s', () => {
         it('should update an existing article\'s votes and respond with the changed article', () => {
           return request(app)
             .patch('/api/articles/1')

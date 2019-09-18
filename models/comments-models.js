@@ -11,8 +11,19 @@ exports.insertComment = (article_id, comment) => {
   }
 
   return connection
-    .insert(commentObj)
-    .into('comments')
-    .returning('*')
-    .then(([comment]) => comment);
+    .select('*')
+    .from('articles')
+    .where({article_id})
+    .then((article) => {
+      if(!article.length) return Promise.reject({code: '22P02'});
+      return connection
+        .insert(commentObj)
+        .into('comments')
+        .returning('*')
+    })
+    .then(([comment]) => comment)
+    .catch(err => {
+      return err.code === '22P02' ? Promise.reject({status: 422, msg: 'Unprocessable Entity'})
+        : Promise.reject(err);
+    })
 }
