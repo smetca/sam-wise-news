@@ -101,6 +101,7 @@ describe('/api', () => {
             .get('/api/articles/1')
             .expect(200)
             .then(({body}) => {
+              console.log(body);
               expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
                 'author',
                 'title',
@@ -128,7 +129,7 @@ describe('/api', () => {
             .get('/api/articles/not-a-valid-id')
             .expect(400)
             .then(({body}) => {
-              expect(body.msg).toBe('select * from "articles" where "article_id" = $1 - invalid input syntax for integer: "not-a-valid-id"');
+              expect(body.msg).toBe('select "articles".*, count("comment_id") as "comment_count" from "articles" left join "comments" on "articles"."article_id" = "comments"."article_id" where "articles"."article_id" = $1 group by "articles"."article_id" - invalid input syntax for integer: "not-a-valid-id"');
             });
         });
       });

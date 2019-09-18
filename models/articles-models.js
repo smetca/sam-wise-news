@@ -3,25 +3,15 @@ const connection = require('../connection');
 exports.selectArticle = (article_id) => {
   console.log(article_id);
   return connection
-    .select('*')
+    .select('articles.*')
     .from('articles')
-    .where({article_id})
+    .where('articles.article_id', article_id)
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .count('comment_id AS comment_count')
     .then(([article]) => {
-      if(!article) {
-        return Promise.reject({status: 404, msg: 'Not Found'});
-
-      }
-      const commentsForArticle = connection
-        .select('comment_id')
-        .from('comments')
-        .where({article_id});
-        return Promise.all([article, commentsForArticle])
-      })
-      .then(([article, commentsForArticle]) => {
-        console.log(article);
-        article.comment_count = commentsForArticle.length;
-        return article;
-    })
+      return !article ? Promise.reject({status: 404, msg: 'Not Found'}) : article;
+    });
 }
 
 exports.updateArticleVotes = (article_id, newVotes) => {

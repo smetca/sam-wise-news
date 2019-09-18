@@ -1,4 +1,5 @@
 exports.handlePsqlErrors = (err, req, res, next) => {
+  console.log(err);
   console.log(err.message);
   if(err.code) {
     res.status(400).json({ msg: err.message })
