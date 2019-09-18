@@ -1,5 +1,20 @@
 const connection = require('../connection');
 
+exports.selectArticles = (sortBy = 'created_at', orderBy = 'asc', author, topic) => {
+  console.log('here2');
+  return connection
+    .select('articles.*')
+    .from('articles')
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .count('comment_id AS comment_count')
+    .modify((myQuery) => {
+      if(author) myQuery.where('articles.author', author);
+      if(topic) myQuery.where({topic});
+    })
+    .orderBy(sortBy, orderBy)
+}
+
 exports.selectArticle = (article_id) => {
   console.log(article_id);
   return connection

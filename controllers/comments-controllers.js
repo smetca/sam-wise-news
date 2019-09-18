@@ -5,7 +5,7 @@ exports.postComment = (req, res, next) => {
   const comment = req.body;
   insertCommentByArticle(article_id, comment)
     .then(comment => {
-      res.status(200).json({comment});
+      res.status(201).json({comment});
     })
     .catch(next)
 }

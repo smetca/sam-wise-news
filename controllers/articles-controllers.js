@@ -1,4 +1,4 @@
-const {selectArticle, updateArticleVotes} = require('../models/articles-models');
+const {selectArticles, selectArticle, updateArticleVotes} = require('../models/articles-models');
 
 exports.getArticle = (req, res, next) => {
   const {article_id} = req.params;
@@ -6,6 +6,17 @@ exports.getArticle = (req, res, next) => {
     .then(article => {
       console.log(article);
       res.status(200).json({article});
+    })
+    .catch(next);
+}
+
+exports.getArticles = (req, res, next) => {
+
+  const {sortBy, orderBy, author, topic} = req.query;
+
+  selectArticles(sortBy, orderBy, author, topic)
+    .then(articles => {
+      res.status(200).json({articles})
     })
     .catch(next);
 }

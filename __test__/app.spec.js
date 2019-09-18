@@ -13,9 +13,10 @@ describe('/api', () => {
   afterAll(() => {
     return connection.destroy();
   })
+
   describe('/topics', () => {
     describe('GET: 200s', () => {
-      it('should respond with an array of topics that contain all topic properties', () => {
+      it('should respond with 200 and an array of topics that contain all topic properties', () => {
         return request(app)
           .get('/api/topics')
           .expect(200)
@@ -25,10 +26,12 @@ describe('/api', () => {
       });
     });
   });
+
   describe('/users', () => {
+
     describe('/:username', () => {
       describe('GET: 200s', () => {
-        it('should respond with a single user object with valid properties when given a valid username', () => {
+        it('should respond with 200 and a single user object with valid properties when given a valid username', () => {
           return request(app)
             .get('/api/users/lurker')
             .expect(200)
@@ -48,12 +51,153 @@ describe('/api', () => {
         });
       });
     });
+
   });
+
   describe('/articles', () => {
+    describe('GET: 200s', () => {
+      it('should respond with 200 and an array of articles', () => {
+        return request(app)
+          .get('/api/articles')
+          .expect(200)
+          .then(({body}) => {
+            expect(Object.keys(body.articles[0])).toEqual(expect.arrayContaining([
+              'author',
+              'title',
+              'article_id',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            ]))
+          })
+      });
+      it('should respond with 200 and articles should be sorted by created_at by default', () => {
+        return request(app)
+          .get('/api/articles')
+          .expect(200)
+          .then(({body}) => {
+            chaiExpect(body.articles).to.be.sortedBy('created_at')
+          })
+      });
+      it('should respond with 200 and allow sorting by any valid column', () => {
+        return request(app)
+          .get('/api/articles?sortBy=title')
+          .expect(200)
+          .then(({body}) => {
+            chaiExpect(body.articles).to.be.sortedBy('title');
+          });
+      });
+      it('should respond with 200 and allow sorting to be done desc', () => {
+        return request(app)
+          .get('/api/articles?orderBy=desc')
+          .expect(200)
+          .then(({body}) => {
+            chaiExpect(body.articles).to.be.descendingBy('created_at');
+          });
+      });
+      it('should respond with 200 and allow filtering by author name', () => {
+        return request(app)
+          .get('/api/articles?author=butter_bridge')
+          .expect(200)
+          .then(({body}) => {
+            expect(body.articles.every(article => article.author === 'butter_bridge')).toBe(true);
+          })
+      });
+      it('should respond with 200 and allow for filtering by topic name', () => {
+        return request(app)
+          .get('/api/articles?topic=mitch')
+          .expect(200)
+          .then(({body}) => {
+            expect(body.articles.every(article => article.topic === 'mitch')).toBe(true);
+          })
+      });
+      it('should respond with 200 and all queries should be usable simultaneously', () => {
+        return request(app)
+          .get('/api/articles?sortBy=title&orderBy=desc&author=butter_bridge&topic=mitch')
+          .expect(200)
+          .then(({body}) => {
+            expect(
+              body.articles.every(article => {
+              return article.author === 'butter_bridge' && article.topic === 'mitch'
+              }))
+              .toBe(true);
+            chaiExpect(body.articles).to.be.descendingBy('title');
+          })
+      });
+    });
+    describe('GET: 400s', () => {
+      it('should respond with 400 and an error message when given an invalid query', () => {
+        return request(app)
+          .get('/api/articles?sortBy=1010')
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('select \"articles\".*, count(\"comment_id\") as \"comment_count\" from \"articles\" left join \"comments\" on \"articles\".\"article_id\" = \"comments\".\"article_id\" group by \"articles\".\"article_id\" order by \"1010\" asc - column \"1010\" does not exist');
+          })
+      });
+    });
+
     describe('/:article_id', () => {
+      describe('GET: 200s', () => {
+        it('should respond with 200 and an article with all article properties when given a valid article_id', () => {
+          return request(app)
+            .get('/api/articles/1')
+            .expect(200)
+            .then(({body}) => {
+              expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
+                'author',
+                'title',
+                'article_id',
+                'body',
+                'topic',
+                'created_at',
+                'votes',
+                'comment_count'
+              ]))
+            })
+        });
+      });
+      describe('GET: 400s', () => {
+        it('should respond with a 404 given a non existant article id, and an error message', () => {
+          return request(app)
+            .get('/api/articles/10000')
+            .expect(404)
+            .then(({body}) => {
+              expect(body.msg).toBe('Not Found');
+            })
+        });
+        it('should respond with a 400 given an invalid article id, and an error message', () => {
+          return request(app)
+            .get('/api/articles/not-a-valid-id')
+            .expect(400)
+            .then(({body}) => {
+              expect(body.msg).toBe('select "articles".*, count("comment_id") as "comment_count" from "articles" left join "comments" on "articles"."article_id" = "comments"."article_id" where "articles"."article_id" = $1 group by "articles"."article_id" - invalid input syntax for integer: "not-a-valid-id"');
+            });
+        });
+      });
+      describe('PATCH: 200s', () => {
+        it('should respond with 200 and update an existing article\'s votes and respond with the changed article', () => {
+          return request(app)
+            .patch('/api/articles/1')
+            .send({ inc_votes: 30 })
+            .expect(200)
+            .then(({body}) => {
+              expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
+                'author',
+                'title',
+                'article_id',
+                'body',
+                'topic',
+                'created_at',
+                'votes'
+              ]));
+            })
+        });
+      });
+
       describe('/comments', () => {
         describe('GET: 200s', () => {
-          it('should respond with an array of comments posted on a specific article', () => {
+          it('should respond with 200 and an array of comments posted on a specific article', () => {
             return request(app)
               .get('/api/articles/1/comments')
               .expect(200)
@@ -67,7 +211,7 @@ describe('/api', () => {
                 ]))
               })
           });
-          it('should respond with comments sorted by default with created_at', () => {
+          it('should respond with 200 and comments sorted by default with created_at', () => {
             return request(app)
               .get('/api/articles/1/comments')
               .expect(200)
@@ -75,7 +219,7 @@ describe('/api', () => {
                 chaiExpect(body.comments).to.be.sortedBy('created_at');
               })
           });
-          it('should respond with comments sorted by any valid column', () => {
+          it('should respond with 200 and comments sorted by any valid column', () => {
             return request(app)
               .get('/api/articles/1/comments?sortBy=votes')
               .expect(200)
@@ -83,7 +227,7 @@ describe('/api', () => {
                 chaiExpect(body.comments).to.be.sortedBy('votes');
               })
           });
-          it('should allow columns to be ordered by descending', () => {
+          it('should respond with 200 and allow columns to be ordered by descending', () => {
             return request(app)
               .get('/api/articles/1/comments?orderBy=desc')
               .expect(200)
@@ -119,11 +263,11 @@ describe('/api', () => {
           });
         });
         describe('POST: 200s', () => {
-          it('should post a new comment on a specific article and return that posted comment', () => {
+          it('should respond with 201 and post a new comment on a specific article and return that posted comment', () => {
             return request(app)
               .post('/api/articles/1/comments')
               .send({username: 'lurker', body: 'Just testing'})
-              .expect(200)
+              .expect(201)
               .then(({body}) => {
                 expect(Object.keys(body.comment)).toEqual(expect.arrayContaining([
                   'comment_id',
@@ -165,63 +309,7 @@ describe('/api', () => {
           });
         });
       });
-      describe('GET: 200s', () => {
-        it('should respond with an article with all article properties when given a valid article_id', () => {
-          return request(app)
-            .get('/api/articles/1')
-            .expect(200)
-            .then(({body}) => {
-              console.log(body);
-              expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
-                'author',
-                'title',
-                'article_id',
-                'body',
-                'topic',
-                'created_at',
-                'votes',
-                'comment_count'
-              ]))
-            })
-        });
-      });
-      describe('GET: 400s', () => {
-        it('should respond with a 404 given a non existant article id, and an error message', () => {
-          return request(app)
-            .get('/api/articles/10000')
-            .expect(404)
-            .then(({body}) => {
-              expect(body.msg).toBe('Not Found');
-            })
-        });
-        it('should respond with a 400 given an invalid article id, and an error message', () => {
-          return request(app)
-            .get('/api/articles/not-a-valid-id')
-            .expect(400)
-            .then(({body}) => {
-              expect(body.msg).toBe('select "articles".*, count("comment_id") as "comment_count" from "articles" left join "comments" on "articles"."article_id" = "comments"."article_id" where "articles"."article_id" = $1 group by "articles"."article_id" - invalid input syntax for integer: "not-a-valid-id"');
-            });
-        });
-      });
-      describe('PATCH: 200s', () => {
-        it('should update an existing article\'s votes and respond with the changed article', () => {
-          return request(app)
-            .patch('/api/articles/1')
-            .send({ inc_votes: 30 })
-            .expect(200)
-            .then(({body}) => {
-              expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
-                'author',
-                'title',
-                'article_id',
-                'body',
-                'topic',
-                'created_at',
-                'votes'
-              ]));
-            })
-        });
-      });
+      
     });
   });
 });
