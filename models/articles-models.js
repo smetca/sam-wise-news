@@ -1,7 +1,6 @@
 const connection = require('../connection');
 
 exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic) => {
-  console.log('here2');
   return connection
     .select('articles.*')
     .from('articles')
@@ -16,7 +15,6 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
 }
 
 exports.selectArticle = (article_id) => {
-  console.log(article_id);
   return connection
     .select('articles.*')
     .from('articles')
@@ -41,9 +39,5 @@ exports.updateArticleVotes = (article_id, newVotes) => {
         .from('articles')
         .where({article_id})
         .returning('*');
-    })
-    .then(updatedArticles => {
-      console.log(updatedArticles);
-      return updatedArticles;
     })
 }
