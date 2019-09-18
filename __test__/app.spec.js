@@ -1,6 +1,10 @@
 const app = require('../app');
 const request = require('supertest');
 const connection = require('../connection');
+const chai = require('chai');
+const chaiExpect = chai.expect;
+const chaiSorted = require('sams-chai-sorted');
+chai.use(chaiSorted);
 
 describe('/api', () => {
   beforeEach(() => {
@@ -48,6 +52,72 @@ describe('/api', () => {
   describe('/articles', () => {
     describe('/:article_id', () => {
       describe('/comments', () => {
+        describe('GET: 200s', () => {
+          it('should respond with an array of comments posted on a specific article', () => {
+            return request(app)
+              .get('/api/articles/1/comments')
+              .expect(200)
+              .then(({body}) => {
+                expect(Object.keys(body.comments[0])).toEqual(expect.arrayContaining([
+                  'comment_id',
+                  'votes',
+                  'created_at',
+                  'author',
+                  'body'
+                ]))
+              })
+          });
+          it('should respond with comments sorted by default with created_at', () => {
+            return request(app)
+              .get('/api/articles/1/comments')
+              .expect(200)
+              .then(({body}) => {
+                chaiExpect(body.comments).to.be.sortedBy('created_at');
+              })
+          });
+          it('should respond with comments sorted by any valid column', () => {
+            return request(app)
+              .get('/api/articles/1/comments?sortBy=votes')
+              .expect(200)
+              .then(({body}) => {
+                chaiExpect(body.comments).to.be.sortedBy('votes');
+              })
+          });
+          it('should allow columns to be ordered by descending', () => {
+            return request(app)
+              .get('/api/articles/1/comments?orderBy=desc')
+              .expect(200)
+              .then(({body}) => {
+                chaiExpect(body.comments).to.be.descendingBy('created_at');
+              })
+          });
+        });
+        describe('GET: 400s', () => {
+          it('should respond with 404 when passed an article that doesn\'t exist', () => {
+            return request(app)
+              .get('/api/articles/1000/comments')
+              .expect(404)
+              .then(({body}) => {
+                expect(body.msg).toBe('Not Found')
+              })
+          });
+          it('should respond with 400 when passed an article that is invalid', () => {
+            return request(app)
+              .get('/api/articles/not-a-valid-article/comments')
+              .expect(400)
+              .then(({body}) => {
+                expect(body.msg).toBe('select * from \"comments\" where \"article_id\" = $1 order by \"created_at\" asc - invalid input syntax for integer: \"not-a-valid-article\"')
+              })
+          });
+          it('should respond with 400 and an error message if passed an invalid query', () => {
+            return request(app)
+              .get('/api/articles/1/comments?sortBy=100&orderBy=200')
+              .expect(400)
+              .then(({body}) => {
+                expect(body.msg).toBe('select * from \"comments\" where \"article_id\" = $1 order by \"100\" asc - column \"100\" does not exist');
+              })
+          });
+        });
         describe('POST: 200s', () => {
           it('should post a new comment on a specific article and return that posted comment', () => {
             return request(app)

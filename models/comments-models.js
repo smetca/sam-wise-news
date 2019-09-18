@@ -1,6 +1,6 @@
 const connection = require('../connection');
 
-exports.insertComment = (article_id, comment) => {
+exports.insertCommentByArticle = (article_id, comment) => {
 
   const commentObj = {
     author: comment.username,
@@ -25,5 +25,17 @@ exports.insertComment = (article_id, comment) => {
     .catch(err => {
       return err.code === '22P02' ? Promise.reject({status: 422, msg: 'Unprocessable Entity'})
         : Promise.reject(err);
+    })
+}
+
+exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'asc') => {
+
+  return connection
+    .select('*')
+    .from('comments')
+    .where({article_id})
+    .orderBy(sortBy, orderBy)
+    .then(comments => {
+      return !comments.length ? Promise.reject({status: 404, msg: 'Not Found'}) : comments;
     })
 }
