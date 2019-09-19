@@ -147,6 +147,22 @@ describe('/api', () => {
             chaiExpect(body.articles).to.be.descendingBy('title');
           })
       });
+      it('should respond with 200 and an empty array when passed an author that doesn\'t exist', () => {
+        return request(app)
+          .get('/api/articles?author=lurker')
+          .expect(200)
+          .then(({body}) => {
+            expect(body.articles).toEqual([]);
+          })
+      });
+      it('should respond with 200 and an empty array when passed an topic that doesn\'t exist', () => {
+        return request(app)
+          .get('/api/articles?topic=paper')
+          .expect(200)
+          .then(({body}) => {
+            expect(body.articles).toEqual([]);
+          })
+      });
     });
     describe('GET: 400s', () => {
       it('should respond with 400 and an error message when given an invalid query', () => {
@@ -272,6 +288,14 @@ describe('/api', () => {
                 chaiExpect(body.comments).to.be.sortedBy('created_at');
               })
           });
+          it('should respond with 200 and an empty array of comments when an article has no comments', () => {
+            return request(app)
+              .get('/api/articles/2/comments')
+              .expect(200)
+              .then(({body}) => {
+                expect(body.comments).toEqual([]);
+              })
+          });
         });
         describe('GET: 400s', () => {
           it('should respond with 404 when passed an article that doesn\'t exist', () => {
@@ -329,10 +353,10 @@ describe('/api', () => {
           it('should respond with 400 and an error message when passed a comment from an invalid user', () => {
             return request(app)
               .post('/api/articles/1/comments')
-              .send({username: 'idontexist', body: 'Just testing'})
+              .send({blarg: 'idontexist', body: 'Just testing'})
               .expect(400)
               .then(({body}) => {
-                expect(body.msg).toBe('Invalid reference ID');
+                expect(body.msg).toBe('Invalid Input');
               })
           });
           it('should respond with 422 when requesting an article that doesn\'t exist an an error message', () => {

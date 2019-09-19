@@ -36,7 +36,7 @@ exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 
         .where({article_id})
         .orderBy(sortBy, orderBy)
         .then(comments => {
-          return !comments.length ? { msg: 'No Comments' } : comments;
+          return !comments.length ? [] : comments;
         })
     })
 }

@@ -1,5 +1,33 @@
 const connection = require('../connection');
 
+const doesTopicExist = (topic) => {
+  if(!topic) return false;
+  else {
+    return connection
+      .select('*')
+      .from('topics')
+      .where({slug: topic})
+      .then(topics => {
+        if(!topics.length) return Promise.reject({status: 404, msg: 'Topic doesn\'t exist'});
+        else return true;
+      })
+  }
+}
+
+const doesAuthorExist = (author) => {
+  if(!author) return false;
+  else {
+    return connection
+      .select('*')
+      .from('users')
+      .where({username: author})
+      .then(authors => {
+        if(!authors.length) return Promise.reject({status: 404, msg: 'Author doesn\'t exist'})
+        else return true
+      })
+  }
+}
+
 exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic) => {
   return connection
     .select('articles.*')
@@ -13,8 +41,9 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
     })
     .orderBy(sortBy, orderBy)
     .then(articles => {
-      return !articles.length ? Promise.reject({status: 404, msg: 'Not Found'}) : articles;
+      return !articles.length ? Promise.all([articles, doesTopicExist(topic), doesAuthorExist(author)]) : [articles];
     })
+    .then(([articles]) => articles)
 }
 
 exports.selectArticle = (article_id) => {

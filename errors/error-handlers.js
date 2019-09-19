@@ -1,5 +1,5 @@
 exports.handlePsqlErrors = (err, req, res, next) => {
-  
+  console.log(err);
   const errors = {
     '42703': {
       status: 400,
@@ -12,10 +12,14 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     '23503': {
       status: 400,
       msg: 'Invalid reference ID'
+    },
+    '23502': {
+      status: 400,
+      msg: 'Invalid Input'
     }
   }
 
-  return ['42703', '22P02', '23503'].includes(err.code) ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg }) : next(err);
+  return ['42703', '22P02', '23503', '23502'].includes(err.code) ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg }) : next(err);
 }
 
 exports.handleCustomErrors = (err, req, res, next) => {
