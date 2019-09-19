@@ -1,5 +1,4 @@
 exports.handlePsqlErrors = (err, req, res, next) => {
-  console.log(err);
   const errors = {
     '42703': {
       status: 400,
