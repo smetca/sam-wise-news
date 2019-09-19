@@ -9,9 +9,12 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
     .count('comment_id AS comment_count')
     .modify((myQuery) => {
       if(author) myQuery.where('articles.author', author);
-      if(topic) myQuery.where({topic});
+      if(topic) myQuery.where('articles.topic', topic);
     })
     .orderBy(sortBy, orderBy)
+    .then(articles => {
+      return !articles.length ? Promise.reject({status: 404, msg: 'Not Found'}) : articles;
+    })
 }
 
 exports.selectArticle = (article_id) => {

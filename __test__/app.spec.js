@@ -25,6 +25,13 @@ describe('/api', () => {
           });
       });
     });
+    describe('ALL: 400s', () => {
+      it('should respond with 405 given an invalid method', () => {
+        return request(app)
+          .put('/api/topics')
+          .expect(405);
+      });
+    });
   });
 
   describe('/users', () => {
@@ -41,7 +48,7 @@ describe('/api', () => {
         });
       });
       describe('GET: 400s', () => {
-        it('should respond with a 404 when given an non existant username, as well as an error message', () => {
+        it('should respond with 404 when given an non existant username, as well as an error message', () => {
           return request(app)
             .get('/api/users/lurkerssssssss')
             .expect(404)
@@ -49,6 +56,13 @@ describe('/api', () => {
               expect(body.msg).toBe('Not Found')
             });
         });
+      });
+      describe('ALL: 400s', () => {
+          it('should respond with 405 when given an invalid method', () => {
+            return request(app)
+              .put('/api/users/lurker')
+              .expect(405);
+          });
       });
     });
 
@@ -140,10 +154,18 @@ describe('/api', () => {
           .get('/api/articles?sortBy=1010')
           .expect(400)
           .then(({body}) => {
-            expect(body.msg).toBe('select \"articles\".*, count(\"comment_id\") as \"comment_count\" from \"articles\" left join \"comments\" on \"articles\".\"article_id\" = \"comments\".\"article_id\" group by \"articles\".\"article_id\" order by \"1010\" desc - column \"1010\" does not exist');
+            expect(body.msg).toBe('Invalid Column Query');
           })
       });
     });
+    describe('ALL: 400s', () => {
+      it('should respond with 405 given an invalid method', () => {
+        return request(app)
+          .put('/api/articles')
+          .expect(405);
+      });
+    });
+
 
     describe('/:article_id', () => {
       describe('GET: 200s', () => {
@@ -179,7 +201,7 @@ describe('/api', () => {
             .get('/api/articles/not-a-valid-id')
             .expect(400)
             .then(({body}) => {
-              expect(body.msg).toBe('select "articles".*, count("comment_id") as "comment_count" from "articles" left join "comments" on "articles"."article_id" = "comments"."article_id" where "articles"."article_id" = $1 group by "articles"."article_id" - invalid input syntax for integer: "not-a-valid-id"');
+              expect(body.msg).toBe('Invalid Input');
             });
         });
       });
@@ -200,6 +222,13 @@ describe('/api', () => {
                 'votes'
               ]));
             })
+        });
+      });
+      describe('ALL: 400s', () => {
+        it('should respond with 405 given an invalid method', () => {
+          return request(app)
+            .put('/api/articles/1')
+            .expect(405);
         });
       });
 
@@ -224,7 +253,7 @@ describe('/api', () => {
               .get('/api/articles/1/comments')
               .expect(200)
               .then(({body}) => {
-                chaiExpect(body.comments).to.be.sortedBy('created_at');
+                chaiExpect(body.comments).to.be.descendingBy('created_at');
               })
           });
           it('should respond with 200 and comments sorted by any valid column', () => {
@@ -232,15 +261,15 @@ describe('/api', () => {
               .get('/api/articles/1/comments?sortBy=votes')
               .expect(200)
               .then(({body}) => {
-                chaiExpect(body.comments).to.be.sortedBy('votes');
+                chaiExpect(body.comments).to.be.descendingBy('votes');
               })
           });
-          it('should respond with 200 and allow columns to be ordered by descending', () => {
+          it('should respond with 200 and allow columns to be ordered by ascending', () => {
             return request(app)
-              .get('/api/articles/1/comments?orderBy=desc')
+              .get('/api/articles/1/comments?orderBy=asc')
               .expect(200)
               .then(({body}) => {
-                chaiExpect(body.comments).to.be.descendingBy('created_at');
+                chaiExpect(body.comments).to.be.sortedBy('created_at');
               })
           });
         });
@@ -258,7 +287,7 @@ describe('/api', () => {
               .get('/api/articles/not-a-valid-article/comments')
               .expect(400)
               .then(({body}) => {
-                expect(body.msg).toBe('select * from \"comments\" where \"article_id\" = $1 order by \"created_at\" asc - invalid input syntax for integer: \"not-a-valid-article\"')
+                expect(body.msg).toBe('Invalid Input')
               })
           });
           it('should respond with 400 and an error message if passed an invalid query', () => {
@@ -266,7 +295,7 @@ describe('/api', () => {
               .get('/api/articles/1/comments?sortBy=100&orderBy=200')
               .expect(400)
               .then(({body}) => {
-                expect(body.msg).toBe('select * from \"comments\" where \"article_id\" = $1 order by \"100\" asc - column \"100\" does not exist');
+                expect(body.msg).toBe('Invalid Column Query');
               })
           });
         });
@@ -294,7 +323,7 @@ describe('/api', () => {
               .send({username: 23, body: 30101})
               .expect(400)
               .then(({body}) => {
-                expect(body.msg).toBe('insert into "comments" ("article_id", "author", "body", "created_at", "votes") values ($1, $2, $3, $4, $5) returning * - insert or update on table "comments" violates foreign key constraint "comments_author_foreign"');
+                expect(body.msg).toBe('Invalid reference ID');
               })
           });
           it('should respond with 400 and an error message when passed a comment from an invalid user', () => {
@@ -303,7 +332,7 @@ describe('/api', () => {
               .send({username: 'idontexist', body: 'Just testing'})
               .expect(400)
               .then(({body}) => {
-                expect(body.msg).toBe('insert into "comments" ("article_id", "author", "body", "created_at", "votes") values ($1, $2, $3, $4, $5) returning * - insert or update on table "comments" violates foreign key constraint "comments_author_foreign"');
+                expect(body.msg).toBe('Invalid reference ID');
               })
           });
           it('should respond with 422 when requesting an article that doesn\'t exist an an error message', () => {
@@ -314,6 +343,13 @@ describe('/api', () => {
               .then(({body}) => {
                 expect(body.msg).toEqual('Unprocessable Entity');
               })
+          });
+        });
+        describe('ALL: 400s', () => {
+          it('should respond with 405 given an invalid method', () => {
+            return request(app)
+              .put('/api/articles/1/comments')
+              .expect(405);
           });
         });
       });
@@ -342,44 +378,60 @@ describe('/api', () => {
             })
         });
       });
-    });
-    describe('PATCH: 400s', () => {
-      it('should respond with 400 and an error message when given an invalid votes object', () => {
-        return request(app)
-          .patch('/api/comments/1')
-          .send(({inc_votes: 'not-a-valid-vote-increment'}))
-          .expect(400)
-          .then(({body}) => {
-            expect(body.msg).toBe('update \"comments\" set \"votes\" = $1 where \"comment_id\" = $2 returning * - invalid input syntax for integer: \"16not-a-valid-vote-increment\"');
-          })
+      describe('PATCH: 400s', () => {
+        it('should respond with 400 and an error message when given an invalid votes object', () => {
+          return request(app)
+            .patch('/api/comments/1')
+            .send(({inc_votes: 'not-a-valid-vote-increment'}))
+            .expect(400)
+            .then(({body}) => {
+              expect(body.msg).toBe('Invalid Input');
+            })
+        });
+        it('should respond with 404 and an error message when given a comment id that doesn\'t exist', () => {
+          return request(app)
+            .patch('/api/comments/1000')
+            .send({inc_votes: 100})
+            .expect(404)
+            .then(({body}) => {
+              expect(body.msg).toBe('Not Found');
+            })
+        });
       });
-    });
-    describe('DELETE: 204', () => {
-      it('should respond with 204 with no content successfully deleting a comment given a valid id', () => {
-        return request(app)
-          .del('/api/comments/1')
-          .expect(204)
-          .then(({body}) => {
-            expect(body).toEqual({});
-          })
+      describe('DELETE: 204', () => {
+        it('should respond with 204 with no content successfully deleting a comment given a valid id', () => {
+          return request(app)
+            .del('/api/comments/1')
+            .expect(204)
+            .then(({body}) => {
+              expect(body).toEqual({});
+            })
+        });
       });
-    });
-    describe('DELETE: 400s', () => {
-      it('should respond with 404 and an error message when given a comment_id that doesn\'t exist', () => {
-        return request(app)
-          .del('/api/comments/1000')
-          .expect(404)
-          .then(({body}) => {
-            expect(body.msg).toBe('Not Found')
-          }) 
+      describe('DELETE: 400s', () => {
+        it('should respond with 404 and an error message when given a comment_id that doesn\'t exist', () => {
+          return request(app)
+            .del('/api/comments/1000')
+            .expect(404)
+            .then(({body}) => {
+              expect(body.msg).toBe('Not Found')
+            }) 
+        });
+        it('should respond with 400 and an error message when given an invalid comment_id', () => {
+          return request(app)
+            .del('/api/comments/not-a-valid-id')
+            .expect(400)
+            .then(({body}) => {
+              expect(body.msg).toBe('Invalid Input');
+            })
+        });
       });
-      it('should respond with 400 and an error message when given an invalid comment_id', () => {
-        return request(app)
-          .del('/api/comments/not-a-valid-id')
-          .expect(400)
-          .then(({body}) => {
-            expect(body.msg).toBe('delete from \"comments\" where \"comment_id\" = $1 returning * - invalid input syntax for integer: \"not-a-valid-id\"');
-          })
+      describe('ALL: 400s', () => {
+        it('should respond with 405 given an invalid method', () => {
+          return request(app)
+            .put('/api/comments/1')
+            .expect(405);
+        });
       });
     });
   });

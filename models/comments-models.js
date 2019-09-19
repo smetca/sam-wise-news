@@ -14,38 +14,42 @@ exports.insertCommentByArticle = (article_id, comment) => {
     .from('articles')
     .where({article_id})
     .then((article) => {
-      if(!article.length) return Promise.reject({code: '22P02'});
+      if(!article.length) return Promise.reject({status: 422, msg: 'Unprocessable Entity'});
       return connection
         .insert(commentObj)
         .into('comments')
         .returning('*')
     })
     .then(([comment]) => comment)
-    .catch(err => {
-      return err.code === '22P02' ? Promise.reject({status: 422, msg: 'Unprocessable Entity'})
-        : Promise.reject(err);
-    })
 }
 
-exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'asc') => {
+exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'desc') => {
   return connection
     .select('*')
-    .from('comments')
+    .from('articles')
     .where({article_id})
-    .orderBy(sortBy, orderBy)
-    .then(comments => {
-      return !comments.length ? Promise.reject({status: 404, msg: 'Not Found'}) : comments;
+    .then((article) => {
+      if(!article.length) return Promise.reject({status: 404, msg: 'Not Found'})
+      return connection
+        .select('*')
+        .from('comments')
+        .where({article_id})
+        .orderBy(sortBy, orderBy)
+        .then(comments => {
+          return !comments.length ? { msg: 'No Comments' } : comments;
+        })
     })
 }
 
 exports.updateCommentById = (comment_id, newVotes) => {
   return connection
-    .select('votes')
+    .select('*')
     .from('comments')
     .where({comment_id})
-    .then(([{votes}]) => {
-      if(!votes) return Promise.reject({status: 404, msg: 'Not Found'})
+    .then((comment) => {
+      if(!comment.length) return Promise.reject({status: 404, msg: 'Not Found'});
       else {
+        let [{votes}] = comment;
         votes += newVotes;
         return connection
           .update({votes})
