@@ -29,6 +29,7 @@ const doesAuthorExist = (author) => {
 }
 
 exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic) => {
+  if(!['asc', 'desc'].includes(orderBy)) return Promise.reject({status: 400, msg: 'Invalid Order Query'})
   return connection
     .select('articles.*')
     .from('articles')

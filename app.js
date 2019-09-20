@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use('/api', apiRouter);
 
-app.use('/*', (req, res, next) => {
+app.use('*', (req, res, next) => {
   next({status: 404, msg: 'Page not found'})
 })
 

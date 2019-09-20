@@ -14,6 +14,28 @@ describe('/api', () => {
     return connection.destroy();
   })
 
+  describe('GET: 200', () => {
+    it('should respond with 200 and a json with all endpoints described', () => {
+      return request(app)
+        .get('/api')
+        .expect(200)
+        .then(({body}) => {
+          expect(body.endpoints).toEqual(expect.objectContaining({
+            'GET /api': expect.any(Object),
+            'GET /api/topics': expect.any(Object),
+            'GET /api/articles': expect.any(Object),
+            'GET /api/articles/:article_id': expect.any(Object),
+            'PATCH /api/articles/:article_id': expect.any(Object),
+            'GET /api/articles/:article_id/comments': expect.any(Object),
+            'POST /api/articles/:article_id/comments': expect.any(Object),
+            'PATCH /api/comments/:comment_id': expect.any(Object),
+            'DELETE /api/comments/:comment_id': expect.any(Object),
+            'GET /api/users/:username': expect.any(Object)
+          }))
+        })
+    });
+  });
+
   describe('/topics', () => {
     describe('GET: 200s', () => {
       it('should respond with 200 and an array of topics that contain all topic properties', () => {
@@ -165,12 +187,20 @@ describe('/api', () => {
       });
     });
     describe('GET: 400s', () => {
-      it('should respond with 400 and an error message when given an invalid query', () => {
+      it('should respond with 400 and an error message when given an invalid sort', () => {
         return request(app)
           .get('/api/articles?sortBy=1010')
           .expect(400)
           .then(({body}) => {
             expect(body.msg).toBe('Invalid Column Query');
+          })
+      });
+      it('should respond with 400 and an error message when given an invalid order', () => {
+        return request(app)
+          .get('/api/articles?orderBy=12039')
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('Invalid Order Query');
           })
       });
     });

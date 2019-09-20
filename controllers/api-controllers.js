@@ -1,10 +1,8 @@
+const endpoints = require('../endpoints.json')
+
 exports.getHomepage = (req, res, next) => {
-  const routes = {
-    '/api/topics': 'GET',
-    '/api/users/:username': 'GET',
-    '/api/articles/:article_id': 'GET, PATCH',
-    '/api/articles': 'GET'
-  }
+  console.log(endpoints);
+  res.status(200).json({endpoints});
 }
 
 exports.methodError = (req, res, next) => {
