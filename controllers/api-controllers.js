@@ -1,7 +1,6 @@
 const endpoints = require('../endpoints.json')
 
 exports.getHomepage = (req, res, next) => {
-  console.log(endpoints);
   res.status(200).json({endpoints});
 }
 

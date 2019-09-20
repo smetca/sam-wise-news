@@ -23,7 +23,7 @@ exports.insertCommentByArticle = (article_id, comment) => {
     .then(([comment]) => comment)
 }
 
-exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'desc') => {
+exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 'desc', limit = 4, p = 1) => {
   return connection
     .select('*')
     .from('articles')
@@ -35,6 +35,8 @@ exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 
         .from('comments')
         .where({article_id})
         .orderBy(sortBy, orderBy)
+        .limit(limit)
+        .offset((p-1) * limit)
         .then(comments => {
           return !comments.length ? [] : comments;
         })

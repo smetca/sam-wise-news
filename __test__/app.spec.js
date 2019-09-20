@@ -185,6 +185,49 @@ describe('/api', () => {
             expect(body.articles).toEqual([]);
           })
       });
+      it('should respond with 200 and a limit of 4 articles by default', () => {
+        return request(app)
+          .get('/api/articles')
+          .then(({body}) => {
+            expect(body.articles.length).toBe(4);
+          })
+      });
+      it('should respond with 200 and the correct article for the page', () => {
+        return request(app)
+          .get('/api/articles?p=2')
+          .then(({body}) => {
+            expect(body.articles[0].article_id).toBe(5);
+          })
+      });
+      it('should respond with 200 and a user defined page limit', () => {
+        return request(app)
+          .get('/api/articles?limit=3')
+          .then(({body}) => {
+            expect(body.articles.length).toBe(3);
+          })
+      });
+      it('should respond with 200 and the correct page, for a user defined limit and page number', () => {
+        return request(app)
+          .get('/api/articles?limit=2&p=3')
+          .then(({body}) => {
+            expect(body.articles[0].article_id).toBe(5);
+            expect(body.articles.length).toBe(2);
+          })
+      });
+      it('should respond with 200 and an empty array when given a page with no content', () => {
+        return request(app)
+          .get('/api/articles?p=100')
+          .then(({body}) => {
+            expect(body.articles).toEqual([]);
+          })
+      });
+      it('should respond with 200 and an empty array when given a limit of 0', () => {
+        return request(app)
+          .get('/api/articles?limit=0')
+          .then(({body}) => {
+            expect(body.articles).toEqual([]);
+          })
+      });
     });
     describe('GET: 400s', () => {
       it('should respond with 400 and an error message when given an invalid sort', () => {
@@ -201,6 +244,14 @@ describe('/api', () => {
           .expect(400)
           .then(({body}) => {
             expect(body.msg).toBe('Invalid Order Query');
+          })
+      });
+      it('should respond with 400 and an error message given an invalid limit', () => {
+        return request(app)
+          .get('/api/articles?limit=-1')
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('Invalid Page Limit')
           })
       });
     });
@@ -350,6 +401,50 @@ describe('/api', () => {
               .expect(400)
               .then(({body}) => {
                 expect(body.msg).toBe('Invalid Column Query');
+              })
+          });
+          it('should respond with 200 and a limit of 4 comments by default', () => {
+            return request(app)
+              .get('/api/articles/1/comments')
+              .then(({body}) => {
+                expect(body.comments.length).toBe(4);
+              })
+          });
+          it('should respond with 200 and the correct comment for the page', () => {
+            return request(app)
+              .get('/api/articles/1/comments?p=2')
+              .then(({body}) => {
+                expect(body.comments[0].comment_id).toBe(6);
+              })
+          });
+          it('should respond with 200 and a user defined page limit', () => {
+            return request(app)
+              .get('/api/articles/1/comments?limit=3')
+              .then(({body}) => {
+                expect(body.comments.length).toBe(3);
+              })
+          });
+          it('should respond with 200 and the correct page, for a user defined limit and page number', () => {
+            return request(app)
+              .get('/api/articles/1/comments?limit=2&p=3')
+              .then(({body}) => {
+                console.log(body.comments);
+                expect(body.comments[0].comment_id).toBe(6);
+                expect(body.comments.length).toBe(2);
+              })
+          });
+          it('should respond with 200 and an empty array when given a page with no content', () => {
+            return request(app)
+              .get('/api/articles/1/comments?p=100')
+              .then(({body}) => {
+                expect(body.comments).toEqual([]);
+              })
+          });
+          it('should respond with 200 and an empty array when given a limit of 0', () => {
+            return request(app)
+              .get('/api/articles/1/comments?limit=0')
+              .then(({body}) => {
+                expect(body.comments).toEqual([]);
               })
           });
         });

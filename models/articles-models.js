@@ -28,7 +28,7 @@ const doesAuthorExist = (author) => {
   }
 }
 
-exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic) => {
+exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic, limit = 4, p = 1) => {
   if(!['asc', 'desc'].includes(orderBy)) return Promise.reject({status: 400, msg: 'Invalid Order Query'})
   return connection
     .select('articles.*')
@@ -41,6 +41,8 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
       if(topic) myQuery.where('articles.topic', topic);
     })
     .orderBy(sortBy, orderBy)
+    .limit(limit)
+    .offset((p-1)*limit)
     .then(articles => {
       return !articles.length ? Promise.all([articles, doesTopicExist(topic), doesAuthorExist(author)]) : [articles];
     })

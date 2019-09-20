@@ -15,10 +15,14 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     '23502': {
       status: 400,
       msg: 'Invalid Input'
+    },
+    '2201W': {
+      status: 400,
+      msg: 'Invalid Page Limit'
     }
   }
 
-  return ['42703', '22P02', '23503', '23502'].includes(err.code) ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg }) : next(err);
+  return errors.hasOwnProperty(err.code) ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg }) : next(err);
 }
 
 exports.handleCustomErrors = (err, req, res, next) => {
