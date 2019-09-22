@@ -14,8 +14,8 @@ exports.getArticles = (req, res, next) => {
   const {sortBy, orderBy, author, topic, limit, p} = req.query;
 
   selectArticles(sortBy, orderBy, author, topic, limit, p)
-    .then(articles => {
-      res.status(200).json({articles})
+    .then(([articles, total_count]) => {
+      res.status(200).json({articles, total_count})
     })
     .catch(next);
 }

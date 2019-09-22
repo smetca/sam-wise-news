@@ -228,6 +228,13 @@ describe('/api', () => {
             expect(body.articles).toEqual([]);
           })
       });
+      it('should respond with 200 and the total_count of filtered articles', () => {
+        return request(app)
+          .get('/api/articles')
+          .then(({body}) => {
+            expect(body.total_count).toBe(12)
+          })
+      });
     });
     describe('GET: 400s', () => {
       it('should respond with 400 and an error message when given an invalid sort', () => {

@@ -30,23 +30,32 @@ const doesAuthorExist = (author) => {
 
 exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic, limit = 4, p = 1) => {
   if(!['asc', 'desc'].includes(orderBy)) return Promise.reject({status: 400, msg: 'Invalid Order Query'})
+  
+  const authorTopicModify = (myQuery) => {
+    if(author) myQuery.where('articles.author', author);
+    if(topic) myQuery.where('articles.topic', topic);
+  }
+
   return connection
     .select('articles.*')
     .from('articles')
     .leftJoin('comments', 'articles.article_id', 'comments.article_id')
     .groupBy('articles.article_id')
     .count('comment_id AS comment_count')
-    .modify((myQuery) => {
-      if(author) myQuery.where('articles.author', author);
-      if(topic) myQuery.where('articles.topic', topic);
-    })
+    .modify(authorTopicModify)
     .orderBy(sortBy, orderBy)
     .limit(limit)
     .offset((p-1)*limit)
     .then(articles => {
-      return !articles.length ? Promise.all([articles, doesTopicExist(topic), doesAuthorExist(author)]) : [articles];
+      const allFilteredArticles = connection
+        .select('articles.article_id')
+        .from('articles')
+        .modify(authorTopicModify)
+      return !articles.length ? Promise.all([articles, allFilteredArticles, doesTopicExist(topic), doesAuthorExist(author)]) : Promise.all([articles, allFilteredArticles]);
     })
-    .then(([articles]) => articles)
+    .then(([articles, allFilteredArticles]) => {
+      return Promise.all([articles, allFilteredArticles.length]);
+    })
 }
 
 exports.selectArticle = (article_id) => {
