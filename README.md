@@ -73,6 +73,6 @@ npm test
 
 ## Requirements
 
-Node: verseion 10 and up,
+Node: version 10 and up,
 
 Postgres: version 10.10
