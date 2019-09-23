@@ -3,7 +3,8 @@ const topicsRouter = require('./topics-router');
 const usersRouter = require('./users-router');
 const articlesRouter = require('./articles-router');
 const commentsRouter = require('./comments-router');
-const {getHomepage, methodError} = require('../controllers/api-controllers')
+const {getHomepage} = require('../controllers/api-controllers')
+const {methodError} = require('../errors/error-handlers');
 
 
 apiRouter.route('/')

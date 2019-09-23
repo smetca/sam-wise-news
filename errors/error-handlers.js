@@ -22,10 +22,16 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     }
   }
 
-  return errors.hasOwnProperty(err.code) ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg }) : next(err);
+  return errors.hasOwnProperty(err.code)
+    ? res.status(errors[err.code].status).json({ msg: errors[err.code].msg })
+    : next(err);
 }
 
 exports.handleCustomErrors = (err, req, res, next) => {
   return err.status ? res.status(err.status).json({msg: err.msg})
     : res.status(500).json({msg: 'Internal Server Error'});
+}
+
+exports.methodError = (req, res, next) => {
+  res.status(405).json({msg: 'method not allowed'})
 }

@@ -435,7 +435,6 @@ describe('/api', () => {
             return request(app)
               .get('/api/articles/1/comments?limit=2&p=3')
               .then(({body}) => {
-                console.log(body.comments);
                 expect(body.comments[0].comment_id).toBe(6);
                 expect(body.comments.length).toBe(2);
               })

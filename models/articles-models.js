@@ -8,8 +8,7 @@ const doesTopicExist = (topic) => {
       .from('topics')
       .where({slug: topic})
       .then(topics => {
-        if(!topics.length) return Promise.reject({status: 404, msg: 'Topic doesn\'t exist'});
-        else return true;
+        return !topics.length ? Promise.reject({status: 404, msg: 'Topic doesn\'t exist'}) : true;
       })
   }
 }
@@ -22,8 +21,7 @@ const doesAuthorExist = (author) => {
       .from('users')
       .where({username: author})
       .then(authors => {
-        if(!authors.length) return Promise.reject({status: 404, msg: 'Author doesn\'t exist'})
-        else return true
+        return !authors.length ? Promise.reject({status: 404, msg: 'Author doesn\'t exist'}) : true
       })
   }
 }
@@ -51,7 +49,9 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
         .select('articles.article_id')
         .from('articles')
         .modify(authorTopicModify)
-      return !articles.length ? Promise.all([articles, allFilteredArticles, doesTopicExist(topic), doesAuthorExist(author)]) : Promise.all([articles, allFilteredArticles]);
+      return !articles.length
+        ? Promise.all([articles, allFilteredArticles, doesTopicExist(topic), doesAuthorExist(author)])
+        : Promise.all([articles, allFilteredArticles]);
     })
     .then(([articles, allFilteredArticles]) => {
       return Promise.all([articles, allFilteredArticles.length]);
@@ -84,4 +84,5 @@ exports.updateArticleVotes = (article_id, newVotes) => {
         .where({article_id})
         .returning('*');
     })
+    .then(([article]) => article);
 }

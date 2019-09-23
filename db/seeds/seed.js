@@ -8,9 +8,6 @@ const {
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
 exports.seed = function(knex) {
-  const topicsInsertions = knex('topics').insert(topicData);
-  const usersInsertions = knex('users').insert(userData);
-
   return knex
     .migrate
     .rollback()
@@ -18,6 +15,8 @@ exports.seed = function(knex) {
       return knex.migrate.latest()
     })
     .then(() => {
+      const topicsInsertions = knex('topics').insert(topicData);
+      const usersInsertions = knex('users').insert(userData);
       return Promise.all([topicsInsertions, usersInsertions])
     })
     .then(() => {

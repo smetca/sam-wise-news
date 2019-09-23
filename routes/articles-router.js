@@ -5,7 +5,7 @@ const {
   patchArticle
 } = require('../controllers/articles-controllers');
 const { postComment, getComments } = require('../controllers/comments-controllers');
-const { methodError } = require('../controllers/api-controllers');
+const { methodError } = require('../errors/error-handlers');
 
 articlesRouter.route('/')
   .get(getArticles)
