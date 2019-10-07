@@ -86,3 +86,11 @@ exports.updateArticleVotes = (article_id, newVotes) => {
     })
     .then(([article]) => article);
 }
+
+exports.insertArticle = (article) => {
+  return connection
+    .insert(article)
+    .into('articles')
+    .returning('*')
+    .then(([article]) => article)
+  }

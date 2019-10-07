@@ -262,6 +262,88 @@ describe('/api', () => {
           })
       });
     });
+    describe('POST: 400s', () => {
+      it('should respond with 200 and the an article given a valid article', () => {
+        return request(app)
+          .post('/api/articles')
+          .send({
+            author: 'butter_bridge',
+            title: 'Living in Wonderland',
+            body: `A bunch of text saying some things.
+              It's an article`,
+            topic: 'mitch'
+          })
+          .expect(200)
+          .then(({body}) => {
+            expect(Object.keys(body.article)).toEqual(expect.arrayContaining([
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes'
+            ]))
+          })
+      });
+      it('should respond with 200 and the next article_id', () => {
+        return request(app)
+          .post('/api/articles')
+          .send({
+            author: 'butter_bridge',
+            title: 'Living in Wonderland',
+            body: `A bunch of text saying some things.
+              It's an article`,
+            topic: 'mitch'
+          })
+          .expect(200)
+          .then(({body}) => {
+            const {article_id} = body.article;
+            expect(article_id).toBe(13);
+          })
+      });
+    });
+    describe('POST: 400s', () => {
+      it('should respond with 400 and an error message when given invalid article object keys', () => {
+        return request(app)
+          .post('/api/articles')
+          .send({
+            invalid_key: 'invalid_value'
+          })
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('Invalid Column Query')
+          })
+      });
+      it('should respond with 400 and an error message when given a valid article object with invalid input value', () => {
+        return request(app)
+          .post('/api/articles')
+          .send({
+            author: 11,
+            title: 22,
+            body: 33,
+            topic: 44
+          })
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('Invalid reference ID');
+          });
+      });
+      it('should respond with 400 and an error message when given non existant authors or topics', () => {
+        return request(app)
+          .post('/api/articles')
+          .send({
+            author: 'invalid_author',
+            title: 'Some title',
+            body: 'Some article text',
+            topic: 'invalid_topic'
+          })
+          .expect(400)
+          .then(({body}) => {
+            expect(body.msg).toBe('Invalid reference ID')
+          })
+      });
+    });
     describe('ALL: 400s', () => {
       it('should respond with 405 given an invalid method', () => {
         return request(app)
