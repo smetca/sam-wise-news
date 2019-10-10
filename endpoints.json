@@ -142,5 +142,23 @@
         "name": "Allan"
       }
     }
+  },
+  "GET /api/users": {
+    "description": "serves all users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "swordfish",
+          "avatar_url": "/some-url",
+          "name": "Allan"
+        },
+        {
+          "username": "etc",
+          "avatar_url": "/etc-url",
+          "name": "someone"
+        }
+      ]
+    }
   }
 }

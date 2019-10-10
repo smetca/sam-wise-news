@@ -57,6 +57,23 @@ describe('/api', () => {
   });
 
   describe('/users', () => {
+    describe('GET: 200s', () => {
+      it('should respond with 200 and an array of users', () => {
+        return request(app)
+          .get('/api/users')
+          .expect(200)
+          .then(({body}) => {
+            expect(Object.keys(body.users[0])).toEqual(expect.arrayContaining(['username', 'avatar_url', 'name']));
+          })
+      });
+    });
+    describe('ALL: 400s', () => {
+      it('should respond with 405 when given an invalid method', () => {
+        return request(app)
+          .put('/api/users')
+          .expect(405);
+      });
+    });
 
     describe('/:username', () => {
       describe('GET: 200s', () => {
