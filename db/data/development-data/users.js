@@ -2,7 +2,7 @@ module.exports = [
   {
     username: 'tickle122',
     name: 'Tom Tickle',
-    avatar_url: 'https://www.spiritsurfers.net/monastery/wp-content/uploads/_41500270_mrtickle.jpg',
+    avatar_url: 'https://i1.wp.com/metro.co.uk/wp-content/uploads/2014/03/wpid-article-1312912102057-0d5dc73100000578-807569_636x482.jpg?quality=90&strip=all&zoom=1&resize=540%2C409',
   },
   {
     username: 'grumpy19',

@@ -135,10 +135,10 @@ describe('/api', () => {
       });
       it('should respond with 200 and allow sorting by any valid column', () => {
         return request(app)
-          .get('/api/articles?sortBy=title')
+          .get('/api/articles?sortBy=comment_count')
           .expect(200)
           .then(({body}) => {
-            chaiExpect(body.articles).to.be.descendingBy('title');
+            chaiExpect(body.articles).to.be.descendingBy('comment_count');
           });
       });
       it('should respond with 200 and be sorted by descending by default', () => {

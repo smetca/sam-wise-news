@@ -41,7 +41,7 @@ exports.selectArticles = (sortBy = 'created_at', orderBy = 'desc', author, topic
     .groupBy('articles.article_id')
     .count('comment_id AS comment_count')
     .modify(authorTopicModify)
-    .orderBy(sortBy, orderBy)
+    .orderBy([{column: sortBy, order: orderBy}, 'article_id'])
     .limit(limit)
     .offset((p-1)*limit)
     .then(articles => {
