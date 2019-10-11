@@ -34,7 +34,7 @@ exports.selectCommentsByArticle = (article_id, sortBy = 'created_at', orderBy = 
         .select('*')
         .from('comments')
         .where({article_id})
-        .orderBy(sortBy, orderBy)
+        .orderBy([{column: sortBy, order: orderBy}, 'comment_id'])
         .limit(limit)
         .offset((p-1) * limit)
         .then(comments => {
